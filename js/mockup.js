@@ -1,79 +1,110 @@
-const winWidth = 800;
-const winHeight = 500;
- 
-const sizeCircle = 20;
-const defaultCircleX = 0 + sizeCircle / 2.0;
-const defaultCircleY = winHeight - sizeCircle / 2.0;
- 
+/********
+ * 
+ * VARIABLES
+ * 
+ ********/
+
 const sizeBox = 30;
-const defaultDistance = 250;
-const minDistance = 100;
-const basement = [];
-const toAppear1 = [];
-const toAppear2 = [];
-const toAppear = [];
+const spots = [];
+
+
+
+/********
+ * 
+ * P5 FUNCTIONS
+ * 
+ ********/
  
 function setup() {
-  createCanvas(winWidth, winHeight);
+  createCanvas(windowWidth, windowHeight);
   frameRate(25);
+
+  const spotsOnX = 9;
+  const spotsOnY = 4;
+
+  const spaceX = windowWidth/(spotsOnX+1);
+  const spaceY = windowHeight/(spotsOnY+1);
    
-  for(let i = 0; i < 2; ++i) {
-    for(let j = 0; j < 2; ++j) {
-      basement.push({x: defaultDistance*2*i, y: defaultDistance*j, busy: false});
+  for(let i = 0; i < spotsOnX; ++i) {
+    for(let j = 0; j < spotsOnY; ++j) {
+      spots.push({position: createVector((i+1)*spaceX, (j+1)*spaceY), onScreen: false, busy: false, maxDist: 0}); // maxDist = distance from the nearest budy spot
     }
   }
- 
-  for(let i = 1; i < 4; i+=2) {
-    for(let j = 0; j < 2; ++j) {
-      toAppear1.push({x: defaultDistance*i, y: defaultDistance*j, busy: false});
-    }
-  }
- 
-  for(let i = 0; i < 3; ++i) {
-    for(let j = 0; j < 2; ++j) {
-      toAppear2.push({x: defaultDistance*(i+0.5), y: defaultDistance*(j+0.5), busy: false});
-    }
-  }
- 
-  toAppear.push(toAppear1);
-  toAppear.push(toAppear2);
+
+  // Make appear the first spot
+  spots[0].onScreen = true;
 }
  
 function draw() {
   background(128, 128, 128);
  
-  fill(255);
-  circle(defaultCircleX, defaultCircleY, sizeCircle);
- 
-  let busyNb = 0;
- 
-  for(const elt of basement) {
-    if(elt.busy) {
-      fill(255, 0, 0);
-      rect(elt.x, elt.y, sizeBox, sizeBox);
-      ++busyNb;
-    }
-    else {
-      fill(0, 255, 120);
-      rect(elt.x, elt.y, sizeBox, sizeBox);
-    }
-  }
- 
-  if(busyNb === basement.length) {
-    if(toAppear.length > 0) {
-      const newElts = toAppear[0];
-      for(const elt of newElts) {
-        basement.push(elt);
+  spots.map(elt => {
+    if(elt.onScreen) {
+      if(elt.busy) {
+        fill(255, 0, 0);
+        rect(elt.position.x, elt.position.y, sizeBox, sizeBox);
       }
-      toAppear.splice(0, 1);
+      else {
+        fill(0, 255, 120);
+        rect(elt.position.x, elt.position.y, sizeBox, sizeBox);
+      }
     }
-  }
+  });
 }
  
 function mousePressed() {
-  for(const elt of basement) {
-    if(mouseX > elt.x && mouseX < elt.x + sizeBox && mouseY > elt.y && mouseY < elt.y + sizeBox) {
-      elt.busy = !elt.busy;
+  spots.map(elt => {
+    if(mouseX > elt.position.x && mouseX < elt.position.x + sizeBox && mouseY > elt.position.y && mouseY < elt.position.y + sizeBox) {
+      (elt.busy) ? freeSpot(elt) : takeUpASpot(elt);
     }
+  });
+}
+
+
+
+/********
+ * 
+ * OUR FUNCTIONS
+ * 
+ ********/
+
+const takeUpASpot = (spot) => {
+  spot.busy = true;
+
+  // Check if every visible spot is busy or not
+  spots.map(elt => {
+    if(elt.onScreen) {
+      if(!elt.busy) return;
+    }
+  });
+
+  spots.map(elt => computeMaxDist(elt));
+
+  // Spot to make happen
+  const newSpot = spots.slice().sort((a, b) => b.maxDist - a.maxDist)[0];
+  console.log(newSpot)
+  newSpot.onScreen = true;
+}
+
+const freeSpot = (spot) => {
+  // If at least one spot is not busy, we can remove this one
+  spots.map(elt => {
+    if(!elt.busy) spot.onScreen = false;
+  });
+  
+  spot.busy = false;
+}
+
+const computeMaxDist = (spot) => {
+  if(spot.busy) {
+    spot.maxDist = 0;
+    return;
   }
+
+  let maxDist = 10000; // Arbitrary big value
+  spots.map(elt => {
+    if(elt.busy) maxDist = Math.min(maxDist, spot.position.dist(elt.position));
+  });
+
+  spot.maxDist = maxDist;
 }
