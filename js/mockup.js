@@ -8,7 +8,8 @@ const sizeBox = 30;
 const spots = [];
 let sound;
 
-
+const spotsOnX = 9;
+const spotsOnY = 4;
 
 /********
  * 
@@ -25,8 +26,6 @@ function setup() {
   frameRate(25);
   
   sound.setVolume(0.1);
-  const spotsOnX = 9;
-  const spotsOnY = 4;
 
   const spaceX = windowWidth/(spotsOnX+1);
   const spaceY = windowHeight/(spotsOnY+1);
@@ -67,10 +66,8 @@ function mousePressed() {
   spots.map(elt => {
     if(mouseX > elt.position.x && mouseX < elt.position.x + sizeBox && mouseY > elt.position.y && mouseY < elt.position.y + sizeBox) {
       //(elt.forbidden) ? freeSpot(elt) : takeUpASpot(elt);
-      console.log(elt);
       //Forbidden : display message
       if(elt.forbidden){
-      	console.log("Stay over the green spot");
       	sound.play();
       }
       //Available : turns busy
@@ -106,14 +103,26 @@ const takeUpASpot = (spot) => {
 
   // Spot to make happen
   const newSpot = spots.slice().sort((a, b) => b.maxDist - a.maxDist)[0];
-  console.log("Spot to make happen : ")
-  console.log(newSpot)
   newSpot.forbidden = false
 }
 
 const freeSpot = (spot) => {
-  spot.busy = false;
-  spot.forbidden = true;
+
+  var count = 0;
+  spots.map(elt => {
+    if(elt.busy) {
+        spot.busy = false;
+        spot.forbidden = false;
+        count ++;
+    }
+  });
+   
+    //terrain is full
+    if(count < spotsOnX*spotsOnY -1 ){
+        spot.busy = false;
+        spot.forbidden = true;
+    }
+    
 }
 
 const computeMaxDist = (spot) => {
