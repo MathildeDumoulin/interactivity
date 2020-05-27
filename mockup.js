@@ -7,9 +7,12 @@
 const sizeBox = 30;
 const spots = [];
 let sound;
+let xMetro = 0, yMetro = 50;
 
 const spotsOnX = 9;
 const spotsOnY = 4;
+
+let bubble;
 
 /********
  * 
@@ -29,6 +32,7 @@ function setup() {
 
   const spaceX = windowWidth/(spotsOnX+1);
   const spaceY = windowHeight/(spotsOnY+1);
+    
    
   for(let i = 0; i < spotsOnX; ++i) {
     for(let j = 0; j < spotsOnY; ++j) {
@@ -42,7 +46,7 @@ function setup() {
  
 function draw() {
   background(128, 128, 128);
- 
+    
   spots.map(elt => {
     if(elt.onScreen) {
       if(elt.forbidden) {
@@ -59,6 +63,8 @@ function draw() {
       }
     }
   });
+    
+
 }
  
 function mousePressed() {
