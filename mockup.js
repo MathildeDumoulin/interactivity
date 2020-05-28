@@ -21,14 +21,14 @@ let bubble;
  ********/
 
 function preload(){
-  sound = loadSound("assets/alert.mp3");
+  sound = loadSound("assets/parody_01.mp3");
 }
  
 function setup() {
   createCanvas(windowWidth, windowHeight);
   frameRate(25);
   
-  sound.setVolume(0.1);
+  sound.setVolume(0.3);
 
   const spaceX = windowWidth/(spotsOnX+1);
   const spaceY = windowHeight/(spotsOnY+1);
